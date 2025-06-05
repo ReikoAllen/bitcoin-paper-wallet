@@ -1,0 +1,21 @@
+{
+  "name": "bitcoin-paper-wallet",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bitcoinjs-lib": "^6.1.7",
+    "ecpair": "^3.0.0",
+    "express": "^5.1.0",
+    "qr-image": "^3.2.0",
+    "qrcode": "^1.5.4",
+    "tiny-secp256k1": "^2.2.3"
+  }
+}
