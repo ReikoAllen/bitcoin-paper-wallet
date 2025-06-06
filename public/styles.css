@@ -79,24 +79,28 @@ img {
 }
 
 #canvasContainer {
-    margin-top: 20px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     gap: 20px;
 }
 
-#frontCanvasWrapper,
-#backSideWrapper {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    max-width: 50%;
+#frontCanvas, #backImage {
+    width: 350px;   /* Set to your desired display width */
+    height: 600px;  /* Set to your desired display height */
+    object-fit: contain;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: block;
 }
 
-#backSideImage {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+#mnemonic {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+#passphrase {
+    display: inline-block;
+    margin-top: 20px;
 }

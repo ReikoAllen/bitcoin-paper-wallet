@@ -1,11 +1,16 @@
+const https = require('https');
+const fs = require('fs');
 const express = require('express');
 const bitcoin = require('bitcoinjs-lib');
+const bip32Factory = require('bip32').BIP32Factory;
+const ecc = require('tiny-secp256k1');
+const bip32 = bip32Factory(ecc);
 const qr = require('qr-image');
 const path = require('path');
-const fs = require('fs'); // Add this at the top with other requires
+const { getBalance } = require('./balance');
+const bip39 = require('bip39');
 
 const ECPair = require('ecpair').ECPairFactory;
-const ecc = require('tiny-secp256k1');
 const ECPairFactory = ECPair(ecc);
 
 const app = express();
@@ -18,18 +23,19 @@ app.get('/generate-paper-wallet', (req, res) => {
     console.log('➡️  Received request to /generate-paper-wallet');
 
     try {
-        const keyPair = ECPairFactory.makeRandom();
-        const pubKeyBuffer = Buffer.from(keyPair.publicKey);
-        const { address } = bitcoin.payments.p2wpkh({ pubkey: pubKeyBuffer });
-        const privateKey = keyPair.toWIF();
+        // Use 128 bits for 12 words, 256 bits for 24 words
+        const words = req.query.words === '12' ? 128 : 256;
+        const mnemonic = bip39.generateMnemonic(words);
 
-        // Save the private key to private_key_wif.txt
-        fs.writeFileSync('private_key_wif.txt', privateKey);
+        const passphrase = req.query.passphrase || '';
+        const seed = bip39.mnemonicToSeedSync(mnemonic, passphrase);
 
-        console.log('✅ Generated keys:');
-        console.log('Private Key:', privateKey);
-        console.log('Address:', address);
-        console.log('Public Key (hex):', pubKeyBuffer.toString('hex')); // Added line
+        const root = bip32.fromSeed(seed);
+        const child = root.derivePath("m/84'/0'/0'/0/0"); // BIP84 (native segwit) first address
+
+        const pubKeyBuffer = child.publicKey;
+        const { address } = bitcoin.payments.p2wpkh({ pubkey: Buffer.from(pubKeyBuffer) });
+        const privateKey = child.toWIF();
 
         // Generate QR codes as Data URLs
         const qrPrivate = qr.imageSync(privateKey, { type: 'png' });
@@ -39,11 +45,13 @@ app.get('/generate-paper-wallet', (req, res) => {
         const publicQrBase64 = 'data:image/png;base64,' + qrPublic.toString('base64');
 
         res.json({
+            mnemonic: mnemonic,           // ← seed phrase
+            passphrase: passphrase,       // ← passphrase (if provided)
             privateQr: privateQrBase64,
             publicQr: publicQrBase64,
             bitcoinAddress: address,
             privateKey: privateKey,
-            publicKey: pubKeyBuffer.toString('hex') // <-- Add this line
+            publicKey: pubKeyBuffer.toString('hex')
         });
     } catch (err) {
         console.error('❌ Error generating paper wallet:', err);
@@ -51,6 +59,23 @@ app.get('/generate-paper-wallet', (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
+app.get('/balance/:address', async (req, res) => {
+    const address = req.params.address;
+    try {
+        const balance = await getBalance(address);
+        res.json(balance);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch balance' });
+    }
 });
+
+// Replace with your actual certificate and key file paths
+const options = {
+  key: fs.readFileSync('server.key'),
+  cert: fs.readFileSync('server.cert')
+};
+
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`🚀 HTTPS server running at https://localhost:${PORT}`);
+});
+console.log('bip32:', bip32);

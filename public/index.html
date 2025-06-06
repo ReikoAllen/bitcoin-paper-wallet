@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>Bitcoin Paper Wallet Generator</title>
+    <link rel="icon" type="image/png" href="img/Bitcoin.png">
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <h1>Bitcoin Paper Wallet Generator</h1>
-    <button onclick="generateWallet()">Generate Paper Wallet</button>
+    <button id="generateWalletButton" onclick="generateWallet()">Generate Wallet</button>
+    <div id="walletWarning" style="margin-top:20px; color:#b22222; font-weight:bold;"></div>
 
     <div class="wallet-section">
         <div class="wallet-item hidden" id="publicSection">
@@ -24,10 +26,14 @@
         </div>
     </div>
 
-    <div id="canvasContainer" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 20px;">
+    <div id="canvasContainer" style="margin-top: 20px; display: flex; justify-content: center; align-items: flex-start; gap: 20px;">
         <!-- Canvas for the front side -->
         <div id="frontCanvasWrapper" class="hidden">
             <canvas id="frontCanvas"></canvas>
+        </div>
+        <!-- Back side image -->
+        <div id="backImageWrapper" class="hidden">
+            <img id="backImage" src="/img/back.png" alt="Back Side" style="display:block;">
         </div>
     </div>
 
@@ -37,206 +43,25 @@
         <button id="downloadPNGButton" class="hidden" onclick="downloadPNG()">Download as PNG</button>
     </div>
 
-    <script>
-        function generateWallet() {
-            fetch('/generate-paper-wallet')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.bitcoinAddress && data.privateKey) {
-                        document.getElementById('publicQr').src = data.publicQr;
-                        document.getElementById('publicAddress').textContent = data.bitcoinAddress;
-                        document.getElementById('publicSection').classList.remove('hidden');
+    <div style="margin-top: 20px;">
+        <button id="checkBalanceButton" class="hidden" onclick="checkBalance()">Check Balance</button>
+        <p id="balanceResult" style="font-weight: bold; color: #007BFF;"></p>
+    </div>
 
-                        document.getElementById('privateQr').src = data.privateQr;
-                        document.getElementById('privateKey').textContent = data.privateKey;
-                        document.getElementById('privateSection').classList.remove('hidden');
+    <div id="seedPhraseSection" style="margin-top: 20px; display: none;">
+      <button id="showMnemonicBtn" onclick="showMnemonic()">Show Seed Phrase</button>
+      <span id="mnemonic" style="display:none; font-weight:bold;"></span>
+      <br>
+      <button id="showPassphraseBtn" onclick="showPassphrase()">Show Passphrase</button>
+      <span id="passphrase" style="display:none; font-weight:bold;"></span>
+    </div>
 
-                        // Automatically generate and show the PNG canvas
-                        generateAndShowPNG();
+    <!-- Add this above or near your Generate Wallet button -->
+    <div style="margin-top: 20px;">
+      <label for="passphraseInput"><strong>Optional Passphrase:</strong></label>
+      <input type="text" id="passphraseInput" placeholder="Enter passphrase (optional)">
+    </div>
 
-                        // Show the download buttons
-                        document.getElementById('downloadPDFButton').classList.remove('hidden');
-                        document.getElementById('downloadPNGButton').classList.remove('hidden');
-                    } else {
-                        alert('Error generating paper wallet. Please try again later.');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error generating paper wallet. Please try again later.');
-                });
-        }
-
-        async function downloadPDF() {
-            const frontCanvas = document.getElementById('frontCanvas');
-            if (!frontCanvas) {
-                alert('Canvas not found. Please generate the wallet first.');
-                return;
-            }
-
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            try {
-                // Convert the front canvas to a PNG data URL
-                const frontImageData = frontCanvas.toDataURL('image/png');
-
-                // Add the front side image to the PDF
-                doc.addImage(frontImageData, 'PNG', 0, 0, 210, 297); // Full-page background (A4 size in mm)
-
-                // Load the back side image
-                const backImage = new Image();
-                backImage.src = '/img/back.png'; // Path to the back side image
-
-                await new Promise((resolve, reject) => {
-                    backImage.onload = resolve;
-                    backImage.onerror = reject;
-                });
-
-                // Add a new page for the back side
-                doc.addPage();
-                doc.addImage(backImage, 'PNG', 0, 0, 210, 297); // Full-page background (A4 size in mm)
-
-                // Save the PDF
-                doc.save('Bitcoin_Paper_Wallet.pdf');
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                alert('Failed to generate PDF. Please try again.');
-            }
-        }
-
-        async function downloadPNG() {
-            const frontCanvas = document.getElementById('frontCanvas');
-            if (!frontCanvas) {
-                alert('Front canvas not found. Please generate the wallet first.');
-                return;
-            }
-
-            const frontImageData = frontCanvas.toDataURL('image/png');
-
-            // Load the back side image
-            const backImage = new Image();
-            backImage.src = '/img/back.png'; // Path to the back side image
-
-            try {
-                await new Promise((resolve, reject) => {
-                    backImage.onload = resolve;
-                    backImage.onerror = reject;
-                });
-
-                // Create a canvas for the back side
-                const backCanvas = document.createElement('canvas');
-                backCanvas.width = frontCanvas.width;
-                backCanvas.height = frontCanvas.height;
-
-                const backCtx = backCanvas.getContext('2d');
-                backCtx.drawImage(backImage, 0, 0, backCanvas.width, backCanvas.height);
-
-                // Convert the back canvas to a PNG data URL
-                const backImageData = backCanvas.toDataURL('image/png');
-
-                // Create temporary link elements to download the images
-                const frontLink = document.createElement('a');
-                frontLink.href = frontImageData;
-                frontLink.download = 'Bitcoin_Paper_Wallet_Front.png'; // File name for the front side
-                frontLink.click(); // Trigger the download for the front side
-
-                const backLink = document.createElement('a');
-                backLink.href = backImageData;
-                backLink.download = 'Bitcoin_Paper_Wallet_Back.png'; // File name for the back side
-                backLink.click(); // Trigger the download for the back side
-            } catch (error) {
-                console.error('Error generating PNGs:', error);
-                alert('Failed to generate PNGs. Please check the image path and try again.');
-            }
-        }
-
-        async function generateAndShowPNG() {
-            const publicQr = document.getElementById('publicQr').src;
-            const privateQr = document.getElementById('privateQr').src;
-
-            const frontImage = new Image();
-            frontImage.src = '/img/paper.png'; // Path to the front side image
-
-            const backImage = new Image();
-            backImage.src = '/img/back.png'; // Path to the back side image
-
-            try {
-                // Wait for the front side image to load
-                await new Promise((resolve, reject) => {
-                    frontImage.onload = () => {
-                        console.log('Front side image loaded successfully.');
-                        resolve();
-                    };
-                    frontImage.onerror = () => {
-                        console.error('Failed to load front side image. Check the path: /img/paper.png');
-                        reject();
-                    };
-                });
-
-                // Create a canvas for the front side
-                const frontCanvas = document.getElementById('frontCanvas');
-                frontCanvas.width = frontImage.width;
-                frontCanvas.height = frontImage.height;
-
-                const frontCtx = frontCanvas.getContext('2d');
-                frontCtx.drawImage(frontImage, 0, 0, frontCanvas.width, frontCanvas.height);
-
-                // Add the public QR code
-                if (publicQr) {
-                    const publicQrImage = new Image();
-                    publicQrImage.src = publicQr;
-                    await new Promise((resolve, reject) => {
-                        publicQrImage.onload = resolve;
-                        publicQrImage.onerror = reject;
-                    });
-                    frontCtx.drawImage(publicQrImage, 248, 30.7, 120, 120); // Adjusted X, Y, Width, Height for Public QR Code
-                }
-
-                // Add the private QR code
-                if (privateQr) {
-                    const privateQrImage = new Image();
-                    privateQrImage.src = privateQr;
-                    await new Promise((resolve, reject) => {
-                        privateQrImage.onload = resolve;
-                        privateQrImage.onerror = reject;
-                    });
-                    frontCtx.drawImage(privateQrImage, 28.7, 591.2, 120, 120); // Adjusted X, Y, Width, Height for Private QR Code
-                }
-
-                // Wait for the back side image to load
-                await new Promise((resolve, reject) => {
-                    backImage.onload = () => {
-                        console.log('Back side image loaded successfully.');
-                        resolve();
-                    };
-                    backImage.onerror = () => {
-                        console.error('Failed to load back side image. Check the path: /img/back.png');
-                        reject();
-                    };
-                });
-
-                console.log('Both images loaded successfully.');
-
-                // Create a canvas for the back side with the same dimensions as the front side
-                const backCanvas = document.getElementById('backCanvas');
-                backCanvas.width = frontCanvas.width; // Match front canvas width
-                backCanvas.height = frontCanvas.height; // Match front canvas height
-
-                const backCtx = backCanvas.getContext('2d');
-                backCtx.fillStyle = '#f5f5f5'; // Light gray placeholder
-                backCtx.fillRect(0, 0, backCanvas.width, backCanvas.height);
-
-                console.log('Back side canvas prepared.');
-
-                // Show both canvases
-                document.getElementById('frontCanvasWrapper').classList.remove('hidden');
-                document.getElementById('backSideWrapper').classList.remove('hidden');
-            } catch (error) {
-                console.error('Error generating canvases:', error);
-                alert('Failed to generate canvases. Please check the image paths and try again.');
-            }
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
