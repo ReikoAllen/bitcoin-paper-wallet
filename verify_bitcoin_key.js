@@ -99,7 +99,10 @@ rl.question('Enter your WIF private key: ', (wif) => {
     // Comparison
     function check(label, a, b) {
       const status = a === b ? '✅' : '❌ Mismatch';
-      console.log(`→ ${label} Match: ${status}`);
+      // Pad the label to the same width BEFORE adding " Match:"
+      const labelWidth = 18;
+      const paddedLabel = label.padEnd(labelWidth, ' ');
+      console.log(`→ ${paddedLabel}Match: ${status}`);
     }
 
     console.log('\n==== Comparison ====');

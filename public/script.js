@@ -94,16 +94,50 @@ async function downloadPDF() {
     }
 
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    // A4 size in mm
+    const pageWidth = 210;
+    const pageHeight = 297;
+
+    // Wallet size in mm (3"x6")
+    const walletWidth = 76.2;
+    const walletHeight = 152.4;
+
+    // Center position
+    const x = (pageWidth - walletWidth) / 2;
+    const y = (pageHeight - walletHeight) / 2;
 
     try {
         // Convert the front canvas to a PNG data URL
         const frontImageData = frontCanvas.toDataURL('image/png');
 
-        // Add the front side image to the PDF
-        doc.addImage(frontImageData, 'PNG', 0, 0, 210, 297); // Full-page background (A4 size in mm)
+        // Add the front side image to the PDF, centered
+        doc.addImage(frontImageData, 'PNG', x, y, walletWidth, walletHeight);
 
-        // Load the back side image
+        // Draw crop marks (5mm long, 0.2mm thick)
+        const markLen = 5;
+        const markThickness = 0.2;
+
+        doc.setLineWidth(markThickness);
+
+        // Top left
+        doc.line(x - markLen, y, x, y); // horizontal
+        doc.line(x, y - markLen, x, y); // vertical
+
+        // Top right
+        doc.line(x + walletWidth, y - markLen, x + walletWidth, y); // vertical
+        doc.line(x + walletWidth, y, x + walletWidth + markLen, y); // horizontal
+
+        // Bottom left
+        doc.line(x - markLen, y + walletHeight, x, y + walletHeight); // horizontal
+        doc.line(x, y + walletHeight, x, y + walletHeight + markLen); // vertical
+
+        // Bottom right
+        doc.line(x + walletWidth, y + walletHeight, x + walletWidth + markLen, y + walletHeight); // horizontal
+        doc.line(x + walletWidth, y + walletHeight, x + walletWidth, y + walletHeight + markLen); // vertical
+
+        // Add a new page for the back side
         const backImage = new Image();
         backImage.src = '/img/back.png'; // Path to the back side image
 
@@ -112,12 +146,65 @@ async function downloadPDF() {
             backImage.onerror = reject;
         });
 
-        // Add a new page for the back side
         doc.addPage();
-        doc.addImage(backImage, 'PNG', 0, 0, 210, 297); // Full-page background (A4 size in mm)
 
-        // Save the PDF
-        doc.save('Bitcoin_Paper_Wallet.pdf');
+        // Add the back image, same position and size
+        doc.addImage(backImage, 'PNG', x, y, walletWidth, walletHeight);
+
+        // Draw crop marks on back page
+        doc.setLineWidth(markThickness);
+
+        // Top left
+        doc.line(x - markLen, y, x, y);
+        doc.line(x, y - markLen, x, y);
+
+        // Top right
+        doc.line(x + walletWidth, y - markLen, x + walletWidth, y);
+        doc.line(x + walletWidth, y, x + walletWidth + markLen, y);
+
+        // Bottom left
+        doc.line(x - markLen, y + walletHeight, x, y + walletHeight);
+        doc.line(x, y + walletHeight, x, y + walletHeight + markLen);
+
+        // Bottom right
+        doc.line(x + walletWidth, y + walletHeight, x + walletWidth + markLen, y + walletHeight);
+        doc.line(x + walletWidth, y + walletHeight, x + walletWidth, y + walletHeight + markLen);
+
+        // Render PDF in a hidden iframe and print
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+
+        // Utility to detect mobile
+        function isMobile() {
+            return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+        }
+
+        if (isMobile()) {
+            // On mobile, offer download instead of print
+            const downloadLink = document.createElement('a');
+            downloadLink.href = pdfUrl;
+            downloadLink.download = 'Bitcoin_Paper_Wallet.pdf';
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            alert('Printing is not supported on mobile. The PDF has been downloaded instead.');
+        } else {
+            // Desktop: print in hidden iframe
+            let printFrame = document.getElementById('printPDFFrame');
+            if (printFrame) {
+                printFrame.parentNode.removeChild(printFrame);
+            }
+            printFrame = document.createElement('iframe');
+            printFrame.style.display = 'none';
+            printFrame.id = 'printPDFFrame';
+            document.body.appendChild(printFrame);
+            printFrame.src = pdfUrl;
+            printFrame.onload = function () {
+                printFrame.contentWindow.focus();
+                printFrame.contentWindow.print();
+            };
+        }
     } catch (error) {
         console.error('Error generating PDF:', error);
         alert('Failed to generate PDF. Please try again.');

@@ -63,5 +63,26 @@
     </div>
 
     <script src="script.js"></script>
+
+    <footer style="margin-top: 40px; text-align: center; color: #888;">
+        <div>
+            <script>
+                function openOrFocusTab(url, name) {
+                    const win = window.open(url, name);
+                    if (win) win.focus();
+                }
+
+                // Only show the link to the other page
+                if (!window.location.pathname.endsWith('/index.html')) {
+                    document.write('<button onclick="openOrFocusTab(\'/index.html\', \'walletgen\')" style="background:none;border:none;color:#007bff;cursor:pointer;text-decoration:underline;font:inherit;">Generate Wallet</button>');
+                }
+                if (!window.location.pathname.endsWith('/recovery/recover.html')) {
+                    if (!window.location.pathname.endsWith('/index.html')) document.write(' | ');
+                    document.write('<button onclick="openOrFocusTab(\'/recovery/recover.html\', \'walletrecovery\')" style="background:none;border:none;color:#007bff;cursor:pointer;text-decoration:underline;font:inherit;">Recover Wallet</button>');
+                }
+            </script>
+        </div>
+        <div style="margin-top:8px;font-size:12px;">&copy; 2025 Bitcoin Paper Wallet</div>
+    </footer>
 </body>
 </html>

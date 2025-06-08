@@ -1,0 +1,112 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f5f5f5;
+    padding: 20px;
+    margin: 0;
+}
+h1 {
+    margin-top: 0;
+    color: #333;
+    font-size: 32px;
+}
+button {
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 20px 0;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    max-width: 300px;
+}
+button:hover {
+    background-color: #0056b3;
+}
+.wallet-section {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+.wallet-item {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-width: 300px;
+    width: 100%;
+}
+img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 10px;
+}
+.address {
+    font-family: monospace;
+    word-break: break-word;
+    color: #555;
+    font-size: 14px;
+}
+.hidden {
+    display: none;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 28px;
+    }
+    button {
+        font-size: 14px;
+        padding: 12px 20px;
+    }
+    .wallet-item {
+        padding: 10px;
+        box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .address {
+        font-size: 12px;
+    }
+    .wallet-section {
+        gap: 10px;
+    }
+}
+
+#canvasContainer {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+#frontCanvas, #backImage {
+    width: 350px;   /* Set to your desired display width */
+    height: 600px;  /* Set to your desired display height */
+    object-fit: contain;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: block;
+}
+
+#recoveredFrontCanvas, #recoveredBackImage {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+#mnemonic {
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+#passphrase {
+    display: inline-block;
+    margin-top: 20px;
+}

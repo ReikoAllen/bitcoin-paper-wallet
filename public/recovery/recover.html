@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bitcoin Key Recovery from Seed</title>
+    <link rel="icon" type="image/png" href="/img/Bitcoin.png">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <h1>Recover Bitcoin Keys from Seed Phrase</h1>
+    <div style="margin-top: 20px;">
+        <label for="seedInput"><strong>Seed Phrase (mnemonic):</strong></label><br>
+        <textarea id="seedInput" rows="3" style="width: 350px;" placeholder="Enter your 12 or 24 word seed phrase"></textarea>
+    </div>
+    <div style="margin-top: 20px;">
+        <label for="recoverPassphraseInput"><strong>Optional Passphrase:</strong></label>
+        <input type="text" id="recoverPassphraseInput" placeholder="Enter passphrase (optional)">
+    </div>
+    <div style="margin-top: 20px;">
+        <button id="recoverKeysButton" onclick="recoverKeys()">Recover Keys</button>
+    </div>
+    <div id="recoverWarning" style="margin-top:20px; color:#b22222; font-weight:bold;"></div>
+
+    <div class="wallet-section">
+        <div class="wallet-item hidden" id="recoveredPublicSection">
+            <h2>Bitcoin Address (Public)</h2>
+            <img id="recoveredPublicQr" src="" alt="Public QR Code">
+            <p class="address" id="recoveredPublicAddress"></p>
+        </div>
+        <div class="wallet-item hidden" id="recoveredPrivateSection">
+            <h2>Private Key</h2>
+            <img id="recoveredPrivateQr" src="" alt="Private QR Code">
+            <p class="address" id="recoveredPrivateKey"></p>
+        </div>
+    </div>
+
+    <div id="recoveredCanvasContainer" style="margin-top: 20px; display: flex; justify-content: center; align-items: flex-start; gap: 20px;">
+        <div id="recoveredFrontCanvasWrapper" class="hidden">
+            <canvas id="recoveredFrontCanvas"></canvas>
+        </div>
+        <div id="recoveredBackImageWrapper" class="hidden">
+            <img id="recoveredBackImage" src="/img/back.png" alt="Back Side" style="display:block;">
+        </div>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button id="recoveredDownloadPDFButton" class="hidden" onclick="downloadRecoveredPDF()">Download as PDF</button>
+        <button id="recoveredDownloadPNGButton" class="hidden" onclick="downloadRecoveredPNG()">Download as PNG</button>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button id="recoveredCheckBalanceButton" class="hidden" onclick="checkRecoveredBalance()">Check Balance</button>
+        <p id="recoveredBalanceResult" style="font-weight: bold; color: #007BFF;"></p>
+    </div>
+
+    <script src="./recover.js"></script>
+
+    <footer style="margin-top: 40px; text-align: center; color: #888;">
+        <div>
+            <script>
+                function openOrFocusTab(url, name) {
+                    const win = window.open(url, name);
+                    if (win) win.focus();
+                }
+
+                // Only show the link to the other page
+                if (!window.location.pathname.endsWith('/index.html')) {
+                    document.write('<button onclick="openOrFocusTab(\'/index.html\', \'walletgen\')" style="background:none;border:none;color:#007bff;cursor:pointer;text-decoration:underline;font:inherit;">Generate Wallet</button>');
+                }
+                if (!window.location.pathname.endsWith('/recovery/recover.html')) {
+                    if (!window.location.pathname.endsWith('/index.html')) document.write(' | ');
+                    document.write('<button onclick="openOrFocusTab(\'/recovery/recover.html\', \'walletrecovery\')" style="background:none;border:none;color:#007bff;cursor:pointer;text-decoration:underline;font:inherit;">Recover Wallet</button>');
+                }
+            </script>
+        </div>
+        <div style="margin-top:8px;font-size:12px;">&copy; 2025 Bitcoin Paper Wallet</div>
+    </footer>
+</body>
+</html>

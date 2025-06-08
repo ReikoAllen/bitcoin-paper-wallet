@@ -1,28 +1,39 @@
 # Bitcoin Paper Wallet Generator
 
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
+
+[GitHub Repository](https://github.com/ReikoAllen/bitcoin-paper-wallet)
+
 ## Overview
-This project is a **Bitcoin Paper Wallet Generator** that allows users to securely generate Bitcoin addresses and private keys. It provides QR codes for easy scanning and supports downloading the wallet as a PDF or PNG file. The application is built using Node.js, Express.js, and Bitcoin-related libraries.
+This project is a **Bitcoin Paper Wallet Generator** that allows users to securely generate and recover Bitcoin addresses and private keys. It provides QR codes for easy scanning, supports downloading the wallet as a PDF or PNG file, and allows you to check your wallet balance. The application is built using Node.js, Express.js, and Bitcoin-related libraries.
 
 ---
 
+## What's New in v2.0.0
+
+- Improved navigation (tab focusing, no duplicate tabs)
+- Enhanced seed phrase sanitization and recovery UX
+- Security and usability improvements
+- Updated dependencies and documentation
+
 ## Features
-- **Generate Bitcoin Wallets**:
+
+- **Generate Bitcoin Wallets**
   - Generate a **Native SegWit (Bech32)** Bitcoin address (starts with `bc1`).
-  - Creates a Bitcoin address and private key using secure cryptographic methods.
+  - Securely creates a Bitcoin address and private key.
   - Encodes the private key and Bitcoin address as QR codes for easy scanning.
 
-- **Download Options**:
+- **Recover Bitcoin Wallets**
+  - Recover your wallet using a BIP39 seed phrase and optional passphrase.
+  - Input can be sanitized: numbers, dots, and extra spaces in the seed phrase are automatically removed for user convenience.
+  - Recovers the same address and private key as originally generated (if passphrase matches).
+
+- **Download Options**
   - Download the wallet as a **PDF** (front and back sides included).
   - Download the wallet as **separate PNG files** for the front and back sides.
 
-- **Secure Key Generation**:
-  - Uses `ecpair` and `tiny-secp256k1` libraries for secure private key generation.
-
-- **Customizable Design**:
-  - Includes customizable templates for the wallet's front and back designs.
-
-- **Balance Checker**:
-  - Check the balance of any generated Bitcoin address directly from the web interface.
+- **Balance Checker**
+  - Check the balance of any generated or recovered Bitcoin address directly from the web interface.
   - Uses a server-side endpoint (`/balance/:address`) that queries the Blockstream API via `balance.js`.
   - Displays the balance with **9 decimal places** for precision.
 
@@ -40,23 +51,25 @@ This project is a **Bitcoin Paper Wallet Generator** that allows users to secure
   - If a passphrase is used, it is clearly indicated and displayed only after wallet generation.
 
 - **Security Warnings**
-  - After wallet generation, a prominent warning is shown reminding users to securely store their paper wallet, seed phrase, and passphrase.
+  - After wallet generation or recovery, a prominent warning is shown reminding users to securely store their paper wallet, seed phrase, and passphrase.
   - Warns that anyone with access to these can spend the wallet's funds.
 
 - **Improved User Flow**
   - The generate button and passphrase input are hidden after wallet creation to prevent accidental overwrites.
   - "Show Seed Phrase" and "Show Passphrase" buttons reveal sensitive information only when clicked.
 
+- **Easy Navigation**
+  - Navigation links at the bottom of each page allow you to easily switch between wallet generation and recovery. If you click a navigation link and the page is already open in another tab, it will focus the existing tab instead of opening a new one.
+
 ---
 
 ## Requirements
-To run this project, you need the following:
 
-### Software:
+### Software
 - **Node.js** (v14 or higher)
 - **npm** (Node Package Manager)
 
-### Libraries:
+### Libraries
 - `express` (Web server framework)
 - `bitcoinjs-lib` (Bitcoin library for address and key generation)
 - `qr-image` (QR code generation)
@@ -77,38 +90,46 @@ cd bitcoin-paper-wallet
 ```
 
 ### 2. Install Dependencies
-Run the following command to install the required Node.js libraries:
 ```bash
 npm install
 ```
 
 ### 3. Start the Server
-Start the Express.js server:
 ```bash
 node server.js
 ```
-The server will run at `http://localhost:3000`.
+The server will run at `https://localhost:3000`.
 
 ---
 
 ## Usage
 
 ### Generate a Wallet
-1. Open your browser and navigate to `http://localhost:3000`.
-2. Click the **Generate Paper Wallet** button to create a new Bitcoin wallet.
+1. Open your browser and navigate to `https://localhost:3000/index.html`.
+2. Click the **Generate Wallet** button to create a new Bitcoin wallet.
 3. The wallet will display:
    - **Bitcoin Address (Public)**: QR code and text.
    - **Private Key**: QR code and text.
+   - **Seed Phrase** and **Passphrase** (if used).
+
+### Recover a Wallet
+1. Open your browser and navigate to `https://localhost:3000/recovery/recover.html`.
+2. Enter your seed phrase (with or without numbers/dots/extra spaces) and optional passphrase.
+3. Click **Recover Keys** to restore your wallet.
 
 ### Download Options
-- **Download as PDF**:
-  - Click the **Download as PDF** button to save the wallet as a PDF file.
-- **Download as PNG**:
-  - Click the **Download as PNG** button to save the front and back sides as separate PNG files.
+- **Download as PDF**:  
+  Click the **Download as PDF** button to save the wallet as a PDF file.
+- **Download as PNG**:  
+  Click the **Download as PNG** button to save the front and back sides as separate PNG files.
 
 ### Check Balance
-- Click the **Check Balance** button to fetch and display the current balance of the generated Bitcoin address.
+- Click the **Check Balance** button to fetch and display the current balance of the generated or recovered Bitcoin address.
 - The balance is shown with 9 decimal places for accuracy.
+
+### Navigation
+- Use the **Generate Wallet** and **Recover Wallet** links at the bottom of each page to switch between wallet generation and recovery.  
+  If the page is already open in another tab, it will focus the existing tab instead of opening a new one.
 
 ---
 
@@ -117,10 +138,10 @@ The server will run at `http://localhost:3000`.
 ### Key Security Features
 
 - **Sensitive Data Handling:**  
-  All sensitive data (seed phrase, private key, passphrase) is generated on the server and only sent to the client after wallet creation. The user is instructed to back up this information securely.
+  All sensitive data (seed phrase, private key, passphrase) is generated on the server and only sent to the client after wallet creation or recovery. The user is instructed to back up this information securely.
 
 - **Seed Phrase & Passphrase Handling:**  
-  The BIP39 seed phrase and optional passphrase are only displayed after wallet generation and are hidden by default. They are only revealed when the user explicitly clicks "Show Seed Phrase" or "Show Passphrase".
+  The BIP39 seed phrase and optional passphrase are only displayed after wallet generation or recovery and are hidden by default. They are only revealed when the user explicitly clicks "Show Seed Phrase" or "Show Passphrase".
 
 - **No Persistent Storage:**  
   By default, the application does not store any generated seed phrases, private keys, or passphrases on the server or in any database. Sensitive data is only available in the user's browser session.
@@ -129,7 +150,7 @@ The server will run at `http://localhost:3000`.
   After generating a wallet, the generate button and passphrase input are hidden to prevent accidental overwrites and to encourage the user to back up their credentials immediately.
 
 - **Security Warnings:**  
-  Prominent warnings are displayed after wallet generation, reminding users that anyone with access to the seed phrase or passphrase can spend their Bitcoin, and that losing either means losing access to funds.
+  Prominent warnings are displayed after wallet generation or recovery, reminding users that anyone with access to the seed phrase or passphrase can spend their Bitcoin, and that losing either means losing access to funds.
 
 - **No Transmission to Third Parties:**  
   The application does not transmit seed phrases, private keys, or passphrases to any third-party service or analytics provider.
@@ -166,10 +187,14 @@ This project is designed to maximize user privacy and security by never storing 
 ```
 bitcoin-paper-wallet/
 ├── public/
-│   ├── index.html              # Frontend HTML file
+│   ├── index.html              # Frontend HTML file (wallet generator)
+│   ├── recovery/
+│   │   └── recover.html        # Wallet recovery page
 │   ├── styles.css              # CSS for styling
-│   ├── script.js               # Frontend JavaScript
-│   ├── img/                    # Folder for wallet images (e.g., back.png, paper.png)
+│   ├── script.js               # Frontend JavaScript for wallet generation
+│   ├── recovery/
+│   │   └── recover.js          # Frontend JavaScript for recovery
+│   ├── img/                    # Folder for wallet images (e.g., back.png, paper.png, Bitcoin.png)
 │   └── ...                     # Other frontend assets
 ├── server.js                   # Backend server code (Express.js)
 ├── balance.js                  # Server-side balance checker
