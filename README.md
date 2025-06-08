@@ -2,7 +2,7 @@
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 
-[GitHub Repository](https://github.com/ReikoAllen/bitcoin-paper-wallet)
+**Repository:** [https://github.com/ReikoAllen/bitcoin-paper-wallet](https://github.com/ReikoAllen/bitcoin-paper-wallet)
 
 ## Overview
 This project is a **Bitcoin Paper Wallet Generator** that allows users to securely generate and recover Bitcoin addresses and private keys. It provides QR codes for easy scanning, supports downloading the wallet as a PDF or PNG file, and allows you to check your wallet balance. The application is built using Node.js, Express.js, and Bitcoin-related libraries.
@@ -187,15 +187,14 @@ This project is designed to maximize user privacy and security by never storing 
 ```
 bitcoin-paper-wallet/
 ├── public/
-│   ├── index.html              # Frontend HTML file (wallet generator)
 │   ├── recovery/
 │   │   └── recover.html        # Wallet recovery page
-│   ├── styles.css              # CSS for styling
-│   ├── script.js               # Frontend JavaScript for wallet generation
-│   ├── recovery/
 │   │   └── recover.js          # Frontend JavaScript for recovery
 │   ├── img/                    # Folder for wallet images (e.g., back.png, paper.png, Bitcoin.png)
 │   └── ...                     # Other frontend assets
+│   ├── index.html              # Frontend HTML file (wallet generator)
+│   ├── styles.css              # CSS for styling
+│   ├── script.js               # Frontend JavaScript for wallet generation
 ├── server.js                   # Backend server code (Express.js)
 ├── balance.js                  # Server-side balance checker
 ├── generate.js                 # Standalone wallet generator script (Node.js)
